@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <title>Crear</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <img
+            src="assets/img/logo.png"
+            alt=""
+            width="120"
+            height="96"
+            class="d-inline-block align-text-top m-2"
+          />
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNavAltMarkup"
+          aria-controls="navbarNavAltMarkup"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-link active" aria-current="page" href="/index.html">
+              Home
+            </a>
+            <a class="nav-link" href="/create.html"> Nuevo Personaje </a>
+            <a class="nav-link" href="/modificar.html"> Modificar Personaje </a>
+            <div class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Series
+              </a>
+              <div class="dropdown-menu" id="series"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main>
+      <form id="form">
+        <select id="selectSerie" class="form-control"></select>
+        <select id="selectPersonaje" class="form-control"></select>
+        <button class="btn btn-success" type="submit">Modificar</button>
+      </form>
+
+      <div id="infoPersonaje"></div>
+      <div id="infoSerie"></div>
+    </main>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+      const urlApi = "https://apiseriespersonajes.azurewebsites.net/";
+      let idPersonaje = 0;
+      let idSerie = 0;
+      function loadSeries() {
+        let request = "api/series";
+        $.getJSON(urlApi + request, function (data) {
+          let html = "";
+          $.each(data, function (index, serie) {
+            html +=
+              "<a class='dropdown-item' href='/detallesSerie.html?idserie=" +
+              serie.idSerie +
+              "'>" +
+              serie.nombre +
+              "</a>";
+          });
+          $("#series").html(html);
+        });
+      }
+      function cargarOptionsSeries() {
+        let request = "api/series";
+        $.getJSON(urlApi + request, function (data) {
+          let html = "";
+          $.each(data, function (index, serie) {
+            html +=
+              "<option value='" +
+              serie.idSerie +
+              "'>" +
+              serie.nombre +
+              "</option>";
+          });
+          $("#selectSerie").html(html);
+        });
+      }
+      function cargarOptionsPersonajes() {
+        let request = "api/personajes";
+        $.getJSON(urlApi + request, function (data) {
+          let html = "";
+          $.each(data, function (index, personaje) {
+            html +=
+              "<option value='" +
+              personaje.idPersonaje+
+              "'>" +
+              personaje.nombre +
+              "</option>";
+          });
+          $("#selectPersonaje").html(html);
+        });
+      }
+
+      function findSerie(id) {
+        let request = "api/series/" + id;
+        $.getJSON(urlApi + request, function (data) {
+          let h1 = $("<h1>", {
+            text: data.nombre,
+          });
+          let img = $("<img>", {
+            src: data.imagen,
+            alt: data.nombre,
+            height: "200px",
+          });
+
+
+          $("#infoSerie").html("");
+          $("#infoSerie").append(h1);
+          $("#infoSerie").append(img);
+        });
+      }
+
+      function findPersonaje(id) {
+        let request = "api/personajes/" + id;
+        $.getJSON(urlApi + request, function (data) {
+          let h1 = $("<h1>", {
+            text: data.nombre,
+          });
+          let img = $("<img>", {
+            src: data.imagen,
+            alt: data.nombre,
+            height: "200px",
+          });
+
+
+          $("#infoPersonaje").html("");
+          $("#infoPersonaje").append(h1);
+          $("#infoPersonaje").append(img);
+        });
+      }
+
+      $(document).ready(function () {
+        loadSeries();
+        cargarOptionsSeries();
+        cargarOptionsPersonajes();
+
+        $("#selectPersonaje").change(function () {
+          idPersonaje = $(this).val();
+          findPersonaje(idPersonaje);
+          console.log(idPersonaje)
+        });
+
+        $("#selectSerie").change(function () {
+          idSerie = $(this).val();
+          findSerie(idSerie);
+          console.log(idSerie);
+        });
+
+        $("#form").submit(function (e) {
+          e.preventDefault();
+          let idSerie=parseInt($("#selectSerie").val())
+          let idPersonaje=parseInt($("#selectPersonaje").val())
+          let request = "api/personajes/" + idPersonaje + "/" + idSerie;
+
+          $.ajax({
+            url: urlApi + request,
+            method: "PUT",
+            contentType: "application/json",
+            success: function () {
+              window.location.href = "personajes.html?idserie=" + idSerie;
+            },
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
